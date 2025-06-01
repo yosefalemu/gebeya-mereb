@@ -1,0 +1,1 @@
+export const AUTH_COOKIE = "GEBEYA_MEREB_AUTH_COOKIE";
