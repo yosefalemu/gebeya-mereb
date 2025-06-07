@@ -6,8 +6,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 interface CustomInputLabelProps {
   fieldTitle: string;
@@ -15,15 +15,16 @@ interface CustomInputLabelProps {
   placeHolder: string;
   className?: string;
   maxCharLength?: number;
-  showTilte?: boolean;
+  rows?: number;
 }
-export default function CustomInputLabel({
+
+export default function CustomTextareaLabel({
   fieldTitle,
   nameInSchema,
-  showTilte = true,
   placeHolder,
   className,
   maxCharLength,
+  rows,
   ...props
 }: CustomInputLabelProps) {
   const form = useFormContext();
@@ -32,7 +33,7 @@ export default function CustomInputLabel({
       control={form.control}
       name={nameInSchema}
       render={({ field }) => {
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           if (
             maxCharLength === undefined ||
             e.target.value.length <= maxCharLength
@@ -40,27 +41,24 @@ export default function CustomInputLabel({
             field.onChange(e);
           }
         };
+
         return (
           <FormItem className={cn("", className)}>
-            {showTilte && (
-              <FormLabel className="text-sm font-medium text-neutral-700">
-                {fieldTitle}
-              </FormLabel>
-            )}
+            <FormLabel htmlFor={fieldTitle}>{fieldTitle}</FormLabel>
             <FormControl>
-              <Input
+              <Textarea
                 id={nameInSchema}
-                className="w-full max-w-xl disabled:cursor-not-allowed h-12"
+                className="w-full max-w-xl disabled:cursor-not-allowed overflow-auto"
                 placeholder={placeHolder}
+                rows={rows}
                 {...props}
                 {...field}
                 onChange={handleChange}
-                autoComplete="off"
               />
             </FormControl>
-            {maxCharLength !== undefined && (
+            {maxCharLength && (
               <p className="text-xs text-neutral-500 max-w-xl text-right">
-                {field.value?.length ?? 0}/{maxCharLength}
+                {field.value.length}/{maxCharLength}
               </p>
             )}
             <FormMessage />

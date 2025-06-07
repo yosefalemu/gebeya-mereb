@@ -16,8 +16,8 @@ import MemberAvatar from "./member-avatar";
 const routes = [
   { label: "Home", href: "/home", icon: GoHome, activeIcon: GoHomeFill },
   {
-    label: "New Listing",
-    href: "/new-listing",
+    label: "Listing",
+    href: "/listing",
     icon: GoPlus,
     activeIcon: GoPlus,
   },
@@ -51,7 +51,7 @@ export default function Navigation() {
   const pathname = usePathname();
   console.log("PATH NAME", pathname);
   return (
-    <div className="flex flex-col gap-4 p-4 h-screen">
+    <div className="flex flex-col gap-4 p-4 h-screen fixed top-0 left-0 w-72 bg-[#001f3e]">
       <div className="relative w-64 h-24">
         <Image src="/images/mainLogo.png" alt="mainlogo" fill />
       </div>
@@ -79,8 +79,8 @@ export default function Navigation() {
       <div className="flex items-center gap-x-3">
         <MemberAvatar name="Abebe" className="size-12" />
         <div className="flex flex-col gap-y-1">
-          <h1>Abebe</h1>
-          <p className="text-sm">abebebalemu007@gmail.com</p>
+          <h1 className="text-white">Abebe</h1>
+          <p className="text-sm text-white">abebebalemu007@gmail.com</p>
         </div>
       </div>
     </div>

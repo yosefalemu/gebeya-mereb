@@ -6,16 +6,53 @@ import { Form } from "@/components/ui/form";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { useLogin } from "../api/login-api";
+import { toast } from "sonner";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+
+// Define the Zod schema for login
+const loginSchema = z.object({
+  email: z.string().nonempty("Email is required").email("Invalid email format"),
+  password: z
+    .string()
+    .nonempty("Password is required")
+    .min(6, "Password must be at least 6 characters"),
+});
+
+type LoginSchemaType = z.infer<typeof loginSchema>;
 
 export default function SignInCard() {
-  const form = useForm({
+  const loginMutation = useLogin();
+  const router = useRouter(); // For redirecting after login
+
+  const form = useForm<LoginSchemaType>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
+
+  const handleLogin = (data: LoginSchemaType) => {
+    console.log("FORM DATA", data);
+    loginMutation.mutate(
+      { json: data },
+      {
+        onSuccess: () => {
+          toast.success("Login successful!");
+          router.push("/home");
+        },
+        onError: () => {
+          toast.error("Login failed. Please check your credentials.");
+        },
+      }
+    );
+  };
+
   return (
-    <div className="flex flex-col justify-between  h-full min-h-screen p-4 bg-[#001f3e] text-white">
+    <div className="flex flex-col justify-between h-full min-h-screen p-4 bg-[#001f3e] text-white">
       <div className="flex justify-between flex-1 p-16 items-center max-w-7xl mx-auto">
         <div className="flex flex-col items-start w-1/2">
           <div className="h-48 w-[450px] mb-4 relative">
@@ -34,7 +71,7 @@ export default function SignInCard() {
           <h1>USER LOGIN</h1>
           <Form {...form}>
             <form
-              onSubmit={() => console.log("SUBMOTED")}
+              onSubmit={form.handleSubmit(handleLogin)}
               className="flex flex-col gap-y-4"
             >
               <CustomInputLabel
@@ -48,9 +85,15 @@ export default function SignInCard() {
                 placeHolder="Enter password"
                 className="h-12"
               />
-              <Button className="w-full h-12 cursor-pointer">Login</Button>
+              <Button
+                className="w-full h-12 cursor-pointer"
+                type="submit"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? "Logging in..." : "Login"}
+              </Button>
               <div className="w-full text-sm flex items-center justify-center">
-                Don&rsquo;t have an account?
+                Don’t have an account?
                 <Link href="/sign-up">
                   <span className="ml-2 text-blue-700 underline">Sign Up</span>
                 </Link>

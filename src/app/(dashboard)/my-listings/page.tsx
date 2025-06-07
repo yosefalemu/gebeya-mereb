@@ -1,3 +1,9 @@
-export default function MyListings() {
-  return <div>MyListing</div>;
+import MyListings from "@/features/my-listings/components/mylisting";
+
+export default function MyListingsPage() {
+  return (
+    <div className="h-full flex flex-col py-4 gap-y-6">
+      <MyListings />
+    </div>
+  );
 }
