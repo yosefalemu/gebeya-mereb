@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 "use client";
 import CustomCheckboxInput from "@/components/inputs/custom-checkbox-input";
 import CustomImageUploader from "@/components/inputs/custom-image-uploader";
@@ -7,35 +8,73 @@ import CustomTextareaLabel from "@/components/inputs/custom-textarea";
 import CustomMultipleImageUploader from "@/components/inputs/multiple-image-uploader";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { insertResourceSchema, InsertResourceSchemaType } from "../schemas";
 import { useCreateListing } from "../api/create-listing";
+import { useEditListing } from "../api/edit-listing";
+import { useGetListing } from "../api/get-listing";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function NewListing() {
+  const listingId = useSearchParams().get("listingId") || "";
   const createListingMutation = useCreateListing();
+  const editListingMutation = useEditListing();
   const router = useRouter();
+  const { data: listingData, isLoading: isListingLoading } = useGetListing(
+    listingId as string
+  );
+
   const form = useForm<InsertResourceSchemaType>({
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     resolver: zodResolver(insertResourceSchema),
     defaultValues: {
       name: "",
       description: "",
-      thumbnailImage: undefined,
-      otherImages: [],
+      thumbnailImage: "",
+      otherImages: [""],
       category: "OTHER",
       price: "",
       currency: "ETB",
       rate: "DAILY",
       availability: "PENDING",
-      negoitable: "false",
-      location: "OTHER",
+      negoitable: false,
+      location: "ADDIS_ABABA",
       address: "",
-      termsAndConditions: "false",
+      termsAndConditions: false,
       preferredContactMethod: "EMAIL",
     },
   });
+
+  useEffect(() => {
+    if (listingId && listingData?.data && !isListingLoading) {
+      form.reset({
+        name: listingData.data.name || "",
+        description: listingData.data.description || "",
+        thumbnailImage: listingData.data.thumbnailImage || "",
+        otherImages:
+          listingData.data.otherImages.length > 0
+            ? listingData.data.otherImages
+            : [""],
+        category: listingData.data.category || "OTHER",
+        price: listingData.data.price || "",
+        currency: listingData.data.currency || "ETB",
+        rate: listingData.data.rate || "DAILY",
+        availability: listingData.data.availability || "PENDING",
+        negoitable: listingData.data.negoitable || false,
+        location: listingData.data.location || "ADDIS_ABABA",
+        address: listingData.data.address || "",
+        termsAndConditions: listingData.data.termsAndConditions ?? false,
+        preferredContactMethod:
+          listingData.data.preferredContactMethod || "EMAIL",
+        userId: listingData.data.userId ?? null,
+      });
+    }
+  }, [listingId, listingData, isListingLoading, form]);
 
   const listingCategories = [
     { id: "1", name: "TECHNOLOGY" },
@@ -89,35 +128,87 @@ export default function NewListing() {
     { id: "5", name: "IN_PERSON" },
   ];
 
-  const handleCreateListing = async (data: InsertResourceSchemaType) => {
-    if (data.termsAndConditions === "false") {
+  const handleFormSubmit = (data: InsertResourceSchemaType) => {
+    if (data.termsAndConditions === false) {
       toast.error("You must agree to the terms and conditions");
       return;
     }
-    createListingMutation.mutate(
-      { form: data },
-      {
-        onSuccess: () => {
-          toast.success("Resource created successfully!");
-          form.reset();
-          router.push("/my-listings");
+    console.log("Form data submitted:", data);
+
+    if (listingId) {
+      editListingMutation.mutate(
+        {
+          listingId: listingId as string,
+          json: data,
         },
-        onError: () => {
-          toast.error(
-            createListingMutation.error
-              ? createListingMutation.error.message
-              : "Create resource failed"
-          );
-        },
-      }
-    );
+        {
+          onSuccess: () => {
+            toast.success("Listing updated successfully!");
+            router.push("/my-listings");
+          },
+          onError: (error) => {
+            toast.error(error.message || "Update listing failed");
+          },
+        }
+      );
+    } else {
+      createListingMutation.mutate(
+        { json: data },
+        {
+          onSuccess: () => {
+            toast.success("Resource created successfully!");
+            form.reset();
+            router.push("/my-listings");
+          },
+          onError: (error) => {
+            toast.error(error.message || "Create resource failed");
+          },
+        }
+      );
+    }
   };
+
+  if (isListingLoading) {
+    return (
+      <div className="flex flex-col gap-y-5 font-semibold">
+        <Skeleton className="h-8 w-64" /> {/* Title */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col items-start col-span-1 gap-4">
+            <Skeleton className="h-10 w-full" /> {/* Post Title */}
+            <Skeleton className="h-10 w-full" /> {/* Category */}
+            <Skeleton className="h-40 w-full" /> {/* Description */}
+            <Skeleton className="h-10 w-full" /> {/* Availability */}
+            <div className="flex items-center w-full gap-x-3">
+              <Skeleton className="h-10 w-1/2" /> {/* Price */}
+              <Skeleton className="h-10 w-44" /> {/* Currency */}
+              <Skeleton className="h-10 w-48" /> {/* Rate */}
+            </div>
+          </div>
+          <div className="flex flex-col items-start col-span-1 gap-4">
+            <div className="flex items-center w-full justify-between">
+              <Skeleton className="h-10 w-72" /> {/* Location */}
+              <Skeleton className="h-10 w-72" /> {/* Address */}
+            </div>
+            <Skeleton className="h-10 w-full" />{" "}
+            {/* Preferred Contact Method */}
+            <Skeleton className="h-32 w-full" /> {/* Thumbnail Image */}
+            <Skeleton className="h-32 w-full" /> {/* Other Images */}
+            <Skeleton className="h-6 w-40" /> {/* Negoitable Checkbox */}
+            <Skeleton className="h-6 w-64" /> {/* Terms Checkbox */}
+            <Skeleton className="h-12 w-full" /> {/* Button */}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-y-5 font-semibold">
-      <h1 className="text-2xl font-semibold">Create New Listing</h1>
+      <h1 className="text-2xl font-semibold">
+        {listingId ? "Edit Listing" : "Create New Listing"}
+      </h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleCreateListing)}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)}>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col items-start col-span-1 gap-4">
               <CustomInputLabel
@@ -203,6 +294,9 @@ export default function NewListing() {
                 nameInSchema="otherImages"
                 maxFiles={100}
                 placeHolder="Upload images"
+                editMode={!!listingId}
+                listing={listingData?.data}
+                clearImages={() => form.setValue("otherImages", [])}
               />
               <CustomCheckboxInput
                 fieldTitle="Negoitable"
@@ -216,9 +310,18 @@ export default function NewListing() {
               />
               <Button
                 className="h-12 w-full cursor-pointer"
-                disabled={createListingMutation.isPending}
+                disabled={
+                  createListingMutation.isPending ||
+                  editListingMutation.isPending
+                }
               >
-                {createListingMutation.isPending ? "Creating..." : "Create"}
+                {listingId
+                  ? editListingMutation.isPending
+                    ? "Updating..."
+                    : "Update"
+                  : createListingMutation.isPending
+                  ? "Creating..."
+                  : "Create"}
               </Button>
             </div>
           </div>

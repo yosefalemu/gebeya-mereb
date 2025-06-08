@@ -5,6 +5,7 @@ import {
   timestamp,
   uuid,
   varchar,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const userStatusEnum = pgEnum("userStatus", [
@@ -101,16 +102,14 @@ export const resources = pgTable("resources", {
   currency: currencyEnum("currency").notNull(),
   rate: rateEnum("rate").notNull(),
   availability: resourceAvailabilityEnum("availability").notNull(),
-  negoitable: varchar("negoitable").notNull().default("false"),
+  negoitable: boolean("negoitable").default(false),
   location: resourceLocationEnum("location").notNull(),
   address: text("address").notNull(),
   userId: uuid("user_id").notNull(),
   preferredContactMethod: preferredContactMethodEnum(
     "preferred_contact_method"
   ).notNull(),
-  termsAndConditions: varchar("terms_and_conditions")
-    .notNull()
-    .default("false"),
+  termsAndConditions: boolean("terms_and_conditions").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

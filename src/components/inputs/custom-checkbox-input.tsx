@@ -39,10 +39,10 @@ export default function CustomCheckboxInput({
             </div>
             <FormControl>
               <Checkbox
-                checked={field.value === "true"}
-                onCheckedChange={(checked) =>
-                  field.onChange(checked ? "true" : "false")
-                }
+                checked={field.value}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                }}
                 className="h-5 w-5"
               />
             </FormControl>

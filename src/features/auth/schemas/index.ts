@@ -2,6 +2,8 @@ import { createInsertSchema } from "drizzle-zod";
 import { user } from "@/db/schema";
 import { z } from "zod";
 
+const base64Regex = /^data:image\/(jpeg|png|gif);base64,[A-Za-z0-9+/=]+$/;
+
 export const insertUserSchema = createInsertSchema(user, {
   id: (schema) => schema.uuid("Invalid uuid format").optional(),
   name: (schema) =>
@@ -19,16 +21,13 @@ export const insertUserSchema = createInsertSchema(user, {
       .nonempty("Password is required")
       .min(6, "Password must be at least 6 characters"),
   confirmPassword: (schema) => schema.nonempty("Confirm password is required"),
-  image: (schema) =>
-    schema
-      .optional()
-      .transform((value) => (value === "" || value == null ? undefined : value))
-      .or(
-        z
-          .instanceof(File)
-          .refine((file) => file.size > 0, "File cannot be empty")
-          .optional()
-      ),
+  image: () =>
+    z
+      .string()
+      .refine((val) => base64Regex.test(val), {
+        message: "Company mage must be a valid Base64 string",
+      })
+      .refine((val) => val.length > 0, "Company image is required"),
   businessIndustry: (schema) =>
     schema.nonempty("Business industry is required"),
   businessLocation: (schema) =>
@@ -46,12 +45,18 @@ export const insertUserSchema = createInsertSchema(user, {
   businessWebsite: (schema) => schema.optional().default(""),
   businessLicense: () =>
     z
-      .instanceof(File)
-      .refine((file) => file.size > 0, "Business license file is required"),
+      .string()
+      .refine((val) => base64Regex.test(val), {
+        message: "Business License must be a valid Base64 string",
+      })
+      .refine((val) => val.length > 0, "Company image is required"),
   authorizationLetter: () =>
     z
-      .instanceof(File)
-      .refine((file) => file.size > 0, "Authorization letter file is required"),
+      .string()
+      .refine((val) => base64Regex.test(val), {
+        message: "Authorization Letter must be a valid Base64 string",
+      })
+      .refine((val) => val.length > 0, "Company image is required"),
 });
 
 export type insertUserSchemaType = typeof insertUserSchema._type;

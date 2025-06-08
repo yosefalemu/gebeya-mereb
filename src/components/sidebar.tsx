@@ -13,6 +13,8 @@ import { MdOutlineHelpOutline } from "react-icons/md";
 import { MdOutlineHelp } from "react-icons/md";
 import Image from "next/image";
 import MemberAvatar from "./member-avatar";
+import { Skeleton } from "./ui/skeleton";
+import { useCurrentUser } from "@/features/auth/api/current-api";
 const routes = [
   { label: "Home", href: "/home", icon: GoHome, activeIcon: GoHomeFill },
   {
@@ -49,7 +51,7 @@ const routes = [
 
 export default function Navigation() {
   const pathname = usePathname();
-  console.log("PATH NAME", pathname);
+  const { data, isLoading } = useCurrentUser();
   return (
     <div className="flex flex-col gap-4 p-4 h-screen fixed top-0 left-0 w-72 bg-[#001f3e]">
       <div className="relative w-64 h-24">
@@ -76,13 +78,20 @@ export default function Navigation() {
           );
         })}
       </ul>
-      <div className="flex items-center gap-x-3">
-        <MemberAvatar name="Abebe" className="size-12" />
-        <div className="flex flex-col gap-y-1">
-          <h1 className="text-white">Abebe</h1>
-          <p className="text-sm text-white">abebebalemu007@gmail.com</p>
-        </div>
-      </div>
+      {isLoading && data ? (
+        <Skeleton />
+      ) : (
+        data &&
+        !Array.isArray(data) && (
+          <div className="flex items-center gap-x-3">
+            <MemberAvatar name={data.name} className="size-12" />
+            <div className="flex flex-col gap-y-1">
+              <h1 className="text-white">{data.name}</h1>
+              <p className="text-sm text-white">{data.email}</p>
+            </div>
+          </div>
+        )
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 {
-  "id": "78aaf57c-7290-42b5-8e79-5247a436d0de",
+  "id": "7a8b44fe-a963-4b7a-b0a5-5f0972bd7a4e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -154,10 +154,10 @@
         },
         "negoitable": {
           "name": "negoitable",
-          "type": "varchar",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'false'"
+          "notNull": false,
+          "default": false
         },
         "location": {
           "name": "location",
@@ -187,10 +187,10 @@
         },
         "terms_and_conditions": {
           "name": "terms_and_conditions",
-          "type": "varchar",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'false'"
+          "notNull": false,
+          "default": false
         },
         "created_at": {
           "name": "created_at",

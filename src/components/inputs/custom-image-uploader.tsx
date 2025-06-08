@@ -26,7 +26,12 @@ export default function CustomImageUploader({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
-      form.setValue(nameInSchema, file, { shouldValidate: true });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        form.setValue(nameInSchema, base64String, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -38,10 +43,10 @@ export default function CustomImageUploader({
         return (
           <div className={cn("flex flex-col gap-y-2", className)}>
             <div className="flex items-center gap-x-5">
-              {field.value instanceof File ? (
+              {field.value ? (
                 <div className="size-[72px] rounded-md overflow-hidden relative">
                   <Image
-                    src={URL.createObjectURL(field.value)}
+                    src={field.value}
                     fill
                     className="object-cover"
                     alt={fieldTitle}
@@ -75,7 +80,7 @@ export default function CustomImageUploader({
                     size="sm"
                     className="w-fit mt-2 text-xs cursor-pointer"
                     onClick={() => {
-                      field.onChange(undefined);
+                      field.onChange("");
                       if (inputRef.current) {
                         inputRef.current.value = "";
                       }

@@ -30,6 +30,22 @@ const app = new Hono()
       );
     }
   })
+  .get("/current", sessionMiddleware, async (c) => {
+    try {
+      const userId = c.get("userId") as string;
+      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      if (userFound.length === 0) {
+        return c.json({ data: [] });
+      }
+      return c.json({ data: userFound[0] });
+    } catch (error) {
+      console.log("Error while getting current user", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
+  })
   .post(
     "/login",
     zValidator("json", z.object({ email: z.string(), password: z.string() })),
@@ -118,69 +134,6 @@ const app = new Hono()
         400
       );
     }
-    let uploadedUserImage: string | undefined;
-    let uploadedBusinessLicense: string | undefined;
-    let uploadedAuthorizationLetter: string | undefined;
-
-    if (image instanceof File) {
-      try {
-        const fileReader = await image.arrayBuffer();
-        uploadedUserImage = `data:${image.type};base64,${Buffer.from(
-          fileReader
-        ).toString("base64")}`;
-      } catch (err) {
-        console.error("Error while processing image file", err);
-        return c.json(
-          {
-            error: "InvalidImage",
-            message: "Failed to process the image file",
-          },
-          400
-        );
-      }
-    } else {
-      uploadedUserImage = image || "";
-    }
-
-    if (businessLicense instanceof File) {
-      try {
-        const fileReader = await businessLicense.arrayBuffer();
-        uploadedBusinessLicense = `data:${
-          businessLicense.type
-        };base64,${Buffer.from(fileReader).toString("base64")}`;
-      } catch (err) {
-        console.error("Error while processing image file", err);
-        return c.json(
-          {
-            error: "InvalidImage",
-            message: "Failed to process the image file",
-          },
-          400
-        );
-      }
-    } else {
-      uploadedBusinessLicense = businessLicense || "";
-    }
-
-    if (authorizationLetter instanceof File) {
-      try {
-        const fileReader = await authorizationLetter.arrayBuffer();
-        uploadedAuthorizationLetter = `data:${
-          authorizationLetter.type
-        };base64,${Buffer.from(fileReader).toString("base64")}`;
-      } catch (err) {
-        console.error("Error while processing image file", err);
-        return c.json(
-          {
-            error: "InvalidImage",
-            message: "Failed to process the image file",
-          },
-          400
-        );
-      }
-    } else {
-      uploadedAuthorizationLetter = authorizationLetter || "";
-    }
 
     try {
       const [createdUser] = await db
@@ -190,7 +143,7 @@ const app = new Hono()
           email,
           phoneNumber,
           password: hashedPassword,
-          image: uploadedUserImage,
+          image,
           businessIndustry,
           businessLocation,
           businessEmail,
@@ -199,8 +152,8 @@ const app = new Hono()
           businessStatus: "PENDING",
           businessBio: businessBio || "",
           businessWebsite: businessWebsite || "",
-          businessLicense: uploadedBusinessLicense,
-          authorizationLetter: uploadedAuthorizationLetter,
+          businessLicense,
+          authorizationLetter,
           confirmPassword: hashedPassword,
         })
         .returning();
@@ -233,5 +186,28 @@ const app = new Hono()
         500
       );
     }
+  })
+  .get("/:userId", sessionMiddleware, async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json(
+        { error: "BadRequest", message: "User ID is required" },
+        400
+      );
+    }
+    try {
+      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      if (userFound.length === 0) {
+        return c.json({ data: [] });
+      }
+      return c.json({ data: userFound[0] });
+    } catch (error) {
+      console.log("Error while getting user by ID", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
   });
+
 export default app;

@@ -1,4 +1,4 @@
-import MyListings from "@/features/my-listings/components/mylisting";
+import MyListings from "@/features/listings/components/mylisting";
 
 export default function MyListingsPage() {
   return (

@@ -17,8 +17,8 @@ export default function EachItem({
   imageUrl,
 }: EachItemProps) {
   return (
-    <Link href={`/home/${id}`}>
-      <div className="relative w-[360px] h-[280px] rounded-lg overflow-hidden shadow-lg">
+    <Link href={`/listings/${id}`}>
+      <div className="relative w-[380px] h-[280px] rounded-lg overflow-hidden shadow-lg">
         <Image
           src={imageUrl || "/images/office-space.jpg"}
           alt="Office Space"
@@ -37,7 +37,7 @@ export default function EachItem({
             </div>
           </div>
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-            K
+            {title?.charAt(0).toUpperCase() || "O"}
           </div>
         </div>
       </div>

@@ -14,33 +14,24 @@ export const insertResourceSchema = createInsertSchema(resources, {
   description: (schema) => schema.nonempty("Description is required"),
   thumbnailImage: () =>
     z
-      .instanceof(File, { message: "Thumbnail image must be a file" })
-      .refine((file) => file.size > 0, "Thumbnail image is required")
-      .refine(
-        (file) => file.size <= 5 * 1024 * 1024,
-        "Thumbnail image must be less than 5MB"
-      )
-      .refine(
-        (file) => ["image/jpeg", "image/png", "image/gif"].includes(file.type),
-        "Thumbnail image must be JPEG, PNG, or GIF"
-      ),
+      .string()
+      .refine((val) => val.length > 0, "Thumbnail image is required")
+      .refine((val) => base64Regex.test(val), {
+        message: "Thumbnail image must be a valid Base64 string",
+      }),
   otherImages: () =>
     z
       .array(
-        z
-          .instanceof(File, { message: "Image must be a file" })
-          .refine((file) => file.size > 0, "Image file cannot be empty")
-          .refine(
-            (file) => file.size <= 5 * 1024 * 1024,
-            "Image must be less than 5MB"
-          )
-          .refine(
-            (file) =>
-              ["image/jpeg", "image/png", "image/gif"].includes(file.type),
-            "Image must be JPEG, PNG, or GIF"
-          )
+        z.string().refine((val) => !val || base64Regex.test(val), {
+          message: "Each image must be a valid Base64 string",
+        })
       )
-      .default([]),
+      .refine((arr) => arr.length > 0, {
+        message: "At least one additional image is required",
+      })
+      .refine((arr) => arr.every((val) => val), {
+        message: "All images must be valid",
+      }),
   category: () =>
     z.enum(
       [
@@ -73,12 +64,7 @@ export const insertResourceSchema = createInsertSchema(resources, {
     z.enum(["PENDING", "SOLD", "RESERVED", "UNAVAILABLE", "ARCHIVED"], {
       errorMap: () => ({ message: "Invalid availability" }),
     }),
-  negoitable: () =>
-    z
-      .enum(["true", "false"], {
-        errorMap: () => ({ message: "Negoitable must be 'true' or 'false'" }),
-      })
-      .default("false"),
+  negoitable: (schema) => schema.nullable().default(false),
   location: () =>
     z.enum(
       [
@@ -101,18 +87,13 @@ export const insertResourceSchema = createInsertSchema(resources, {
     z.enum(["EMAIL", "PHONE", "WHATSAPP", "SMS", "IN_PERSON"], {
       errorMap: () => ({ message: "Invalid contact method" }),
     }),
-  termsAndConditions: () =>
-    z.enum(["true", "false"], {
-      errorMap: () => ({
-        message: "Terms and conditions must be 'true' or 'false'",
-      }),
-    }),
-  createdAt: () => z.never().optional(),
-  updatedAt: () => z.never().optional(),
+  termsAndConditions: (schema) => schema.nullable().default(false),
+  createdAt: (schema) => schema.optional(),
+  updatedAt: (schema) => schema.optional(),
 });
 
 export const selectResourceSchema = createSelectSchema(resources, {
-  id: (schema) => schema.uuid("Invalid UUID format"),
+  id: (schema) => schema.uuid("Invalid UUID format").optional(),
   name: (schema) =>
     schema
       .min(3, "Name must be at least 3 characters")
@@ -158,10 +139,7 @@ export const selectResourceSchema = createSelectSchema(resources, {
     z.enum(["PENDING", "SOLD", "RESERVED", "UNAVAILABLE", "ARCHIVED"], {
       errorMap: () => ({ message: "Invalid availability" }),
     }),
-  negoitable: () =>
-    z.enum(["true", "false"], {
-      errorMap: () => ({ message: "Negoitable must be 'true' or 'false'" }),
-    }),
+  negoitable: (schema) => schema.default(false),
   location: () =>
     z.enum(
       [
@@ -180,16 +158,13 @@ export const selectResourceSchema = createSelectSchema(resources, {
     ),
   address: (schema) => schema.min(1, "Address is required"),
   userId: (schema) => schema.uuid("Invalid user UUID"),
-  createdAt: (schema) =>
-    schema.refine(
-      (val) => val instanceof Date,
-      "Created at must be a valid date"
-    ),
-  updatedAt: (schema) =>
-    schema.refine(
-      (val) => val instanceof Date,
-      "Updated at must be a valid date"
-    ),
+  termsAndConditions: (schema) => schema.default(false),
+  preferredContactMethod: () =>
+    z.enum(["EMAIL", "PHONE", "WHATSAPP", "SMS", "IN_PERSON"], {
+      errorMap: () => ({ message: "Invalid contact method" }),
+    }),
+  createdAt: () => z.string().optional(),
+  updatedAt: () => z.string().optional(),
 });
 
 export type InsertResourceSchemaType = z.infer<typeof insertResourceSchema>;

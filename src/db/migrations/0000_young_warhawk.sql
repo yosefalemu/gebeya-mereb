@@ -25,12 +25,12 @@ CREATE TABLE "resources" (
 	"currency" "currency" NOT NULL,
 	"rate" "rate" NOT NULL,
 	"availability" "resourceAvailability" NOT NULL,
-	"negoitable" varchar DEFAULT 'false' NOT NULL,
+	"negoitable" boolean DEFAULT false,
 	"location" "resourceLocation" NOT NULL,
 	"address" text NOT NULL,
 	"user_id" uuid NOT NULL,
 	"preferred_contact_method" "preferredContactMethod" NOT NULL,
-	"terms_and_conditions" varchar DEFAULT 'false' NOT NULL,
+	"terms_and_conditions" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );

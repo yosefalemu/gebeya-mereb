@@ -1,17 +1,17 @@
 "use client";
-import FilterOptions from "@/features/home/components/filter-options";
-import ItemLists from "@/features/home/components/item-list";
-import { useGetAllListings } from "@/features/listings/api/all-listings";
+import FilterOptions from "./filter-options";
+import MyListingsItems from "./my-listings-items";
+import { useGetMembers } from "@/features/listings/api/get-user-listings";
 import { useState } from "react";
 
-export default function HomePage() {
+export default function MyListings() {
+  const { data, isLoading, isError } = useGetMembers();
   const [filters, setFilters] = useState({
     category: "",
     location: "",
     priceRange: "",
     availability: "",
   });
-  const { data, isLoading, isError } = useGetAllListings();
 
   // Handle filter changes
   const handleFilterChange = (filterType: string, value: string) => {
@@ -20,7 +20,7 @@ export default function HomePage() {
 
   // Filter the data based on selected filters
   const filteredData = data
-    ? data.data.filter((listing) => {
+    ? data.filter((listing) => {
         const matchesCategory =
           !filters.category || listing.category === filters.category;
         const matchesLocation =
@@ -48,13 +48,21 @@ export default function HomePage() {
         );
       })
     : [];
+
   return (
-    <div className="h-full flex flex-col py-4 gap-y-6">
-      <FilterOptions
-        currentFilters={filters}
-        onFilterChange={handleFilterChange}
-      />
-      <ItemLists data={filteredData} isLoading={isLoading} isError={isError} />
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-bold">My Listings</h1>
+      <div className="flex flex-col gap-4">
+        <FilterOptions
+          onFilterChange={handleFilterChange}
+          currentFilters={filters}
+        />
+        <MyListingsItems
+          isLoading={isLoading}
+          isError={isError}
+          data={filteredData}
+        />
+      </div>
     </div>
   );
 }
