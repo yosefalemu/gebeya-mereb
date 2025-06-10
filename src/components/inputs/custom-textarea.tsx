@@ -44,11 +44,11 @@ export default function CustomTextareaLabel({
 
         return (
           <FormItem className={cn("", className)}>
-            <FormLabel htmlFor={fieldTitle}>{fieldTitle}</FormLabel>
+            <FormLabel htmlFor={fieldTitle} className="text-black">{fieldTitle}</FormLabel>
             <FormControl>
               <Textarea
                 id={nameInSchema}
-                className="w-full max-w-xl disabled:cursor-not-allowed overflow-auto"
+                className="w-full max-w-xl disabled:cursor-not-allowed overflow-auto text-black"
                 placeholder={placeHolder}
                 rows={rows}
                 {...props}

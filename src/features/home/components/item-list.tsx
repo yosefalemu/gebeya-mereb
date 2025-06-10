@@ -1,6 +1,7 @@
 import { SelectResourceSchemaType } from "@/features/listings/schemas";
 import EachItem from "./each-item";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FolderOpen } from "lucide-react";
 
 export default function ItemLists({
   data,
@@ -37,7 +38,13 @@ export default function ItemLists({
   }
 
   if (!data || data.length === 0) {
-    return <div>No items found</div>;
+    return (
+      <div className="h-[250px] w-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-y-2 bg-gray-50 p-6 rounded-full">
+          <FolderOpen className="size-24" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -50,6 +57,7 @@ export default function ItemLists({
             rating={4.5}
             totalRatings={30}
             imageUrl={item.thumbnailImage}
+            status={item.availability}
           />
         </div>
       ))}

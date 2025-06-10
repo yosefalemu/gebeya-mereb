@@ -72,13 +72,18 @@ export default function SignUpComponent() {
     <div className="flex flex-col justify-between  h-full min-h-screen p-4 bg-[#001f3e] text-white">
       <div className="flex flex-col justify-between flex-1 p-16 items-start max-w-7xl mx-auto gap-y-6">
         <div className="flex flex-col items-center w-1/2 mx-auto">
-          <div className="h-48 w-[450px] mb-4 relative">
-            <Image src="/images/mainLogo.png" alt="main logo" fill />
+          <div className="relative w-[25rem] h-40">
+            <Image
+              src="/images/mainLogo.png"
+              alt="main logo"
+              fill
+              className="object-contain"
+            />
           </div>
           <p className="text-3xl font-semibold mt-2">
             Connect, Collaborate, Grow
           </p>
-          <p className="text-xl text-left mt-2">
+          <p className="text-xl text-center mt-2">
             Gebeya Mereb connects vendors and businesses for seamless
             collaboration, efficient transactions, and growth-driven
             partnerships—all in one platform.
@@ -96,16 +101,19 @@ export default function SignUpComponent() {
                   nameInSchema="name"
                   fieldTitle="Full Name"
                   placeHolder="Enter your full name"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="email"
                   fieldTitle="Email"
                   placeHolder="Enter your email"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="phoneNumber"
                   fieldTitle="Phone Number"
                   placeHolder="Enter your phone number"
+                  className="text-white"
                 />
                 <CustomPasswordInput
                   nameInSchema="password"
@@ -128,6 +136,7 @@ export default function SignUpComponent() {
                   nameInSchema="businessIndustry"
                   fieldTitle="Business industry"
                   placeHolder="Enter business industry"
+                  className="text-white"
                 />
               </div>
               <div className="flex flex-col gap-y-4 w-full lg:w-1/2">
@@ -137,31 +146,37 @@ export default function SignUpComponent() {
                   nameInSchema="businessLocation"
                   fieldTitle="Business Loacation (City)"
                   placeHolder="Enter your business location"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="businessAddress"
                   fieldTitle="Business Address"
                   placeHolder="Enter your business address"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="businessEmail"
                   fieldTitle="Business Email"
                   placeHolder="Enter your business email"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="businessPhone"
                   fieldTitle="Business Phone"
                   placeHolder="Enter your business phone number"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="businessBio"
                   fieldTitle="Business Bio"
                   placeHolder="Enter a brief description of your business"
+                  className="text-white"
                 />
                 <CustomInputLabel
                   nameInSchema="businessWebsite"
                   fieldTitle="Business Website"
                   placeHolder="Enter business website"
+                  className="text-white"
                 />
                 <div className="flex items-center gap-x-3">
                   <CustomImageUploader

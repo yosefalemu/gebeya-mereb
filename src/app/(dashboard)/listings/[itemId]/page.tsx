@@ -8,37 +8,49 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import Image from "next/image";
 import { Eye, FolderOpen, Plus } from "lucide-react";
-import MemberAvatar from "@/components/member-avatar";
 import { useGetListing } from "@/features/listings/api/get-listing";
-import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton from Shadcn
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCreateBooking } from "@/features/booking/api/create-booking";
+import { useConfirm } from "@/hooks/use-confirm";
+import { toast } from "sonner";
 
 export default function ItemDetails() {
   const router = useRouter();
+  const createBookingMutation = useCreateBooking();
   const { itemId } = useParams();
   const { data, isLoading, isError } = useGetListing(itemId as string);
 
-  console.log("Current Item ID from URL:", itemId);
-  console.log("Related Listings Data:", data?.relatedListings);
+  const [ConfirmDialog, confirm] = useConfirm(
+    "Book Resource",
+    "Are you sure you want to book this resource? This action cannot be undone.",
+    {
+      variant: "destructive",
+      confirmLabel: "Confirm",
+      cancelLabel: "Cancel",
+    }
+  );
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  const handleBooking = async (listingId: string) => {
+    const ok = await confirm();
+    if (!ok) {
+      return;
+    }
 
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<FaStar key={`full-${i}`} className="text-yellow-400" />);
-    }
-    if (hasHalfStar) {
-      stars.push(<FaStarHalfAlt key="half" className="text-yellow-400" />);
-    }
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<FaRegStar key={`empty-${i}`} className="text-yellow-400" />);
-    }
-    return stars;
+    createBookingMutation.mutate(
+      {
+        json: { listingId },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Item booked successfully!");
+        },
+        onError: () => {
+          toast.error("Failed to book item. Please try again.");
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -83,12 +95,12 @@ export default function ItemDetails() {
               </div>
             </div>
             <div className="col-span-1 flex flex-col gap-y-2 items-start border-l-2 pl-4">
-              <Skeleton className="h-8 w-1/2 mb-4" />
-              <div className="h-80 overflow-y-auto grid grid-cols-2 gap-4 hide-scrollbar border p-4">
-                <Skeleton className="h-52 w-52" />
-                <Skeleton className="h-52 w-52" />
-                <Skeleton className="h-52 w-52" />
-                <Skeleton className="h-52 w-52" />
+              <Skeleton className="h-8 w-full mb-4" />
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-52 w-64" />
+                <Skeleton className="h-52 w-64" />
+                <Skeleton className="h-52 w-64" />
+                <Skeleton className="h-52 w-64" />
               </div>
             </div>
           </div>
@@ -103,7 +115,6 @@ export default function ItemDetails() {
   // Handle navigation to a different listing
   const handleItemClick = (relatedItemId: string) => {
     if (relatedItemId !== itemId) {
-      console.log("Navigating to:", `/listings/${relatedItemId}`);
       router.push(`/listings/${relatedItemId}`);
     } else {
       console.log("Same ID, no navigation needed:", relatedItemId);
@@ -112,6 +123,7 @@ export default function ItemDetails() {
 
   return (
     <div className="w-full flex flex-col gap-y-4 py-4">
+      <ConfirmDialog />
       <div className="relative w-full h-56 rounded-xl overflow-hidden">
         <Image
           src={data?.data.thumbnailImage || "/images/workspace.png"}
@@ -120,10 +132,6 @@ export default function ItemDetails() {
           className="object-cover"
         />
         <div className="absolute bottom-0 left-0 w-full bg-gray-300/60 h-14 rounded-bl-xl rounded-br-xl flex items-center justify-between px-4">
-          <div className="flex items-center gap-1">
-            {renderStars(4.5)}
-            <span>({`${10} ratings`})</span>
-          </div>
           <span className="bg-blue-600 text-white rounded-full px-3 py-1">
             {data?.data.name}
           </span>
@@ -157,13 +165,19 @@ export default function ItemDetails() {
         >
           View Company
         </Button>
-        <Button variant="outline" className="uppercase cursor-pointer">
-          Message
-        </Button>
-        <Button variant="outline" className="uppercase cursor-pointer">
-          Call
-        </Button>
-        <Button className="bg-blue-600 text-white uppercase flex items-center justify-center gap-x-2 cursor-pointer">
+        <Button
+          className="bg-blue-600 text-white uppercase flex items-center justify-center gap-x-2 cursor-pointer"
+          onClick={() => {
+            if (data?.data.id) {
+              handleBooking(data.data.id);
+            }
+          }}
+          disabled={
+            !data?.data.id ||
+            createBookingMutation.isPending ||
+            data?.data.availability !== "PENDING"
+          }
+        >
           Book now
           <span className="ml-2">
             <Plus />
@@ -211,45 +225,6 @@ export default function ItemDetails() {
             <p>
               <strong>Rate:</strong> {data?.data.rate}
             </p>
-            <div className="flex items-center justify-between mt-4">
-              <h1 className="font-semibold uppercase text-2xl">
-                Comments and review(10)
-              </h1>
-              <div className="flex items-center gap-x-12">
-                <div className="flex items-center gap-x-2">
-                  {renderStars(4.5)}
-                </div>
-                <p>4(20 ratings)</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-x-4 mt-4">
-              <MemberAvatar name="Abebe" className="size-12" />
-              <div className=" bg-blue-200 p-4 rounded-lg">
-                <p className="text-sm">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Animi, voluptatibus nisi enim numquam corporis exercitationem
-                  veniam delectus quo cumque accusantium ratione assumenda nam
-                  ullam inventore possimus vero officia similique error!
-                </p>
-                <div className="flex items-center gap-1 justify-end">
-                  {renderStars(4.5)}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-x-4 mt-4">
-              <MemberAvatar name="Abebe" className="size-12" />
-              <div className=" bg-blue-200 p-4 rounded-lg">
-                <p className="text-sm">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Animi, voluptatibus nisi enim numquam corporis exercitationem
-                  veniam delectus quo cumque accusantium ratione assumenda nam
-                  ullam inventore possimus vero officia similique error!
-                </p>
-                <div className="flex items-center gap-1 justify-end">
-                  {renderStars(4.5)}
-                </div>
-              </div>
-            </div>
           </div>
           <div className="col-span-1 flex flex-col gap-y-2 items-start border-l-2 pl-4">
             <h2 className="font-semibold uppercase text-2xl">Similar Items</h2>
@@ -278,10 +253,6 @@ export default function ItemDetails() {
                     >
                       <Eye />
                       <p className="text-sm mt-1 px-2">{relatedItem.name}</p>
-                      <div className="flex items-center gap-1 px-2">
-                        {renderStars(3.5)}
-                      </div>
-                      <div>({20} ratings)</div>
                     </div>
                   </div>
                 ))}

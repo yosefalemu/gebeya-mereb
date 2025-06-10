@@ -1,7 +1,7 @@
 import { client } from "@/lib/rpc";
 import { useQuery } from "@tanstack/react-query";
 
-export const useGetMembers = () => {
+export const useGetUserListings = () => {
   const query = useQuery({
     queryKey: ["get-user-listing"],
     queryFn: async () => {

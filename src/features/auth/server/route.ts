@@ -11,7 +11,55 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { AUTH_COOKIE } from "../constants";
 import { user } from "@/db/schema";
 import { z } from "zod";
-import { insertUserSchema } from "../schemas";
+import { insertUserSchema, updateUserSchema } from "../schemas";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: parseInt(process.env.EMAIL_PORT || "587"),
+  secure: process.env.EMAIL_PORT === "465",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const sendEmailNotification = async (
+  to: string,
+  status: "ACTIVE" | "REJECTED",
+  userName: string
+) => {
+  const subject =
+    status === "ACTIVE"
+      ? "Your Account Has Been Approved"
+      : "Your Account Verification Status";
+  const html =
+    status === "ACTIVE"
+      ? `
+        <h1>Hello, ${userName}</h1>
+        <p>Congratulations! Your account has been successfully verified and is now active.</p>
+        <p>You can now access all features of our platform.</p>
+        <p>Thank you for joining us!</p>
+      `
+      : `
+        <h1>Hello, ${userName}</h1>
+        <p>We regret to inform you that your account verification has been rejected.</p>
+        <p>Please contact our support team for more details or to resubmit your documents.</p>
+        <p>Thank you for your understanding.</p>
+      `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Mereb-Gebeya" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log(`Email sent to ${to} for status ${status}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error);
+  }
+};
 
 const app = new Hono()
   .get("/current", sessionMiddleware, async (c) => {
@@ -62,6 +110,20 @@ const app = new Hono()
             401
           );
         }
+        console.log("User found:", userFound[0]);
+        if (
+          userFound[0].role !== "ADMIN" &&
+          userFound[0].businessStatus !== "ACTIVE"
+        ) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "Your account is not active. Please contact support.",
+            },
+            401
+          );
+        }
+
         const isPasswordValid = await bcrypt.compare(
           password!,
           userFound[0].password
@@ -86,7 +148,7 @@ const app = new Hono()
           maxAge: 7 * 24 * 60 * 60,
           sameSite: "Strict",
         });
-        return c.json({ email, password });
+        return c.json({ email, password, role: userFound[0].role });
       } catch (err) {
         console.log("Error while login", err);
         return c.json(
@@ -155,6 +217,7 @@ const app = new Hono()
           businessLicense,
           authorizationLetter,
           confirmPassword: hashedPassword,
+          role: "USER",
         })
         .returning();
       return c.json({ data: createdUser });
@@ -203,6 +266,228 @@ const app = new Hono()
       return c.json({ data: userFound[0] });
     } catch (error) {
       console.log("Error while getting user by ID", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
+  })
+  .patch(
+    "/:userId",
+    zValidator("json", updateUserSchema),
+    sessionMiddleware,
+    async (c) => {
+      const userId = c.req.param("userId");
+      if (!userId) {
+        return c.json(
+          { error: "BadRequest", message: "User ID is required" },
+          400
+        );
+      }
+      const {
+        name,
+        email,
+        phoneNumber,
+        password,
+        image,
+        businessLocation,
+        businessIndustry,
+        businessBio,
+        businessEmail,
+        businessPhone,
+        businessWebsite,
+        businessLicense,
+        authorizationLetter,
+        businessAddress,
+        aboutus,
+        mission,
+      } = c.req.valid("json");
+      console.log("Updating user with ID:", userId);
+      console.log("password:", password);
+      if (
+        !name ||
+        !email ||
+        !phoneNumber ||
+        !businessIndustry ||
+        !businessLocation ||
+        !businessEmail ||
+        !businessPhone ||
+        !businessLicense ||
+        !authorizationLetter ||
+        !businessAddress
+      ) {
+        return c.json(
+          { error: "BadRequest", message: "All fields are required" },
+          400
+        );
+      }
+      try {
+        const userFound = await db
+          .select()
+          .from(user)
+          .where(eq(user.id, userId));
+        if (userFound.length === 0) {
+          return c.json({ error: "NotFound", message: "User not found" }, 404);
+        }
+        const updatedUser = await db
+          .update(user)
+          .set({
+            name,
+            email,
+            phoneNumber,
+            image,
+            businessIndustry,
+            businessLocation,
+            businessEmail,
+            businessPhone,
+            businessAddress,
+            businessBio: businessBio || "",
+            businessWebsite: businessWebsite || "",
+            businessLicense,
+            authorizationLetter,
+            aboutus: aboutus || "",
+            mission: mission || "",
+          })
+          .where(eq(user.id, userId))
+          .returning();
+        return c.json({ data: updatedUser[0] });
+      } catch (error) {
+        console.log("Error while updating user", error);
+        return c.json(
+          { error: "InternalServerError", message: "Internal Server Error" },
+          500
+        );
+      }
+    }
+  )
+  .post("/logout", sessionMiddleware, async (c) => {
+    try {
+      deleteCookie(c, AUTH_COOKIE);
+      return c.json({ message: "Logged out successfully" });
+    } catch (err) {
+      console.log("Error while logout", err);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
+  })
+  .get("/", async (c) => {
+    try {
+      const users = await db.select().from(user);
+      if (users.length === 0) {
+        return c.json({ data: [] });
+      }
+      return c.json({ data: users });
+    } catch (error) {
+      console.log("Error while getting all users", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
+  })
+  .patch("/:userId/verify", sessionMiddleware, async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json(
+        { error: "BadRequest", message: "User ID is required" },
+        400
+      );
+    }
+    try {
+      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      if (userFound.length === 0) {
+        return c.json({ error: "NotFound", message: "User not found" }, 404);
+      }
+      // Check if the requester is an admin
+      const adminId = c.get("userId") as string;
+      const admin = await db.select().from(user).where(eq(user.id, adminId));
+      if (admin.length === 0 || admin[0].role !== "ADMIN") {
+        return c.json(
+          { error: "Forbidden", message: "Admin access required" },
+          403
+        );
+      }
+      const updatedUser = await db
+        .update(user)
+        .set({ businessStatus: "ACTIVE" })
+        .where(eq(user.id, userId))
+        .returning();
+      await sendEmailNotification(
+        userFound[0].email,
+        "ACTIVE",
+        userFound[0].name || "User"
+      );
+      return c.json({ data: updatedUser[0] });
+    } catch (error) {
+      console.error("Error while verifying user", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
+  })
+  .patch("/:userId/reject", sessionMiddleware, async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json(
+        { error: "BadRequest", message: "User ID is required" },
+        400
+      );
+    }
+    try {
+      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      if (userFound.length === 0) {
+        return c.json({ error: "NotFound", message: "User not found" }, 404);
+      }
+      // Check if the requester is an admin
+      const adminId = c.get("userId") as string;
+      const admin = await db.select().from(user).where(eq(user.id, adminId));
+      if (admin.length === 0 || admin[0].role !== "ADMIN") {
+        return c.json(
+          { error: "Forbidden", message: "Admin access required" },
+          403
+        );
+      }
+      const updatedUser = await db
+        .update(user)
+        .set({ businessStatus: "REJECTED" })
+        .where(eq(user.id, userId))
+        .returning();
+      await sendEmailNotification(
+        userFound[0].email,
+        "REJECTED",
+        userFound[0].name || "User"
+      );
+      return c.json({ data: updatedUser[0] });
+    } catch (error) {
+      console.error("Error while rejecting user", error);
+      return c.json(
+        {
+          error: "InternalServerError",
+          message: "Internal Server Error",
+        },
+        500
+      );
+    }
+  })
+  .get("/loggedin", sessionMiddleware, async (c) => {
+    try {
+      const userId = c.get("userId") as string;
+      if (!userId) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      if (userFound.length === 0) {
+        return c.json({ data: null }, 404);
+      }
+      return c.json({ data: userFound[0] });
+    } catch (error) {
+      console.error("Error while getting logged in user", error);
       return c.json(
         { error: "InternalServerError", message: "Internal Server Error" },
         500

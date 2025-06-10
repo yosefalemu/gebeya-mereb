@@ -62,11 +62,21 @@ export const rateEnum = pgEnum("rate", [
   "MONTHLY",
 ]);
 
+export const bookingStatusEnum = pgEnum("bookingStatus", [
+  "PENDING",
+  "CONFIRMED",
+  "CANCELED",
+  "COMPLETED",
+]);
+
+export const userRoleEnum = pgEnum("userRole", ["ADMIN", "USER"]);
+
 export const user = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 50 }).notNull(),
   email: varchar("email").notNull().unique(),
   image: text("image").default(""),
+  role: userRoleEnum("role").notNull().default("USER"),
   password: varchar("password").notNull(),
   confirmPassword: varchar("confirm_password").notNull(),
   phoneNumber: varchar("phone_number").notNull(),
@@ -82,6 +92,8 @@ export const user = pgTable("user", {
   businessWebsite: text("business_website").notNull().default(""),
   businessLicense: text("business_license").default(""),
   authorizationLetter: text("authorization_letter").default(""),
+  aboutus: text("aboutus").default(""),
+  mission: text("mission").default(""),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -123,6 +135,27 @@ export const rating = pgTable("rating", {
     .notNull()
     .references(() => resources.id, { onDelete: "cascade" }),
   rating: varchar("rating", { length: 5 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const bookings = pgTable("bookings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  senderId: uuid("sender_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  receiverId: uuid("receiver_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  resourceId: uuid("resource_id")
+    .notNull()
+    .references(() => resources.id, { onDelete: "cascade" }),
+  status: bookingStatusEnum("status").notNull().default("PENDING"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

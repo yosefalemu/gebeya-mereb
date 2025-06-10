@@ -87,6 +87,7 @@ export const insertResourceSchema = createInsertSchema(resources, {
     z.enum(["EMAIL", "PHONE", "WHATSAPP", "SMS", "IN_PERSON"], {
       errorMap: () => ({ message: "Invalid contact method" }),
     }),
+
   termsAndConditions: (schema) => schema.nullable().default(false),
   createdAt: (schema) => schema.optional(),
   updatedAt: (schema) => schema.optional(),

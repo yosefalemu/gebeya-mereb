@@ -1,11 +1,11 @@
 "use client";
 import FilterOptions from "./filter-options";
 import MyListingsItems from "./my-listings-items";
-import { useGetMembers } from "@/features/listings/api/get-user-listings";
+import { useGetUserListings } from "@/features/listings/api/get-user-listings";
 import { useState } from "react";
 
 export default function MyListings() {
-  const { data, isLoading, isError } = useGetMembers();
+  const { data, isLoading, isError } = useGetUserListings();
   const [filters, setFilters] = useState({
     category: "",
     location: "",

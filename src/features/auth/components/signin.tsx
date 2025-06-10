@@ -40,9 +40,10 @@ export default function SignInCard() {
     loginMutation.mutate(
       { json: data },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          console.log("Login successful:", data);
           toast.success("Login successful!");
-          router.push("/home");
+          router.push(data.role === "USER" ? "/home" : "/adminhome");
         },
         onError: () => {
           toast.error("Login failed. Please check your credentials.");
@@ -54,13 +55,18 @@ export default function SignInCard() {
   return (
     <div className="flex flex-col justify-between h-full min-h-screen p-4 bg-[#001f3e] text-white">
       <div className="flex justify-between flex-1 p-16 items-center max-w-7xl mx-auto">
-        <div className="flex flex-col items-start w-1/2">
-          <div className="h-48 w-[450px] mb-4 relative">
-            <Image src="/images/mainLogo.png" alt="main logo" fill />
+        <div className="flex flex-col items-start w-2/5">
+          <div className="flex items-center justify-start w-full h-50 mb-4">
+            <div className="relative w-[25rem] h-40">
+              <Image
+                src="/images/mainLogo.png"
+                alt="main logo"
+                fill
+                className="object-contain"
+              />
+            </div>
           </div>
-          <p className="text-3xl font-semibold mt-2">
-            Connect, Collaborate, Grow
-          </p>
+          <p className="text-3xl font-semibold">Connect, Collaborate, Grow</p>
           <p className="text-xl text-left mt-2">
             Gebeya Mereb connects vendors and businesses for seamless
             collaboration, efficient transactions, and growth-driven
@@ -83,7 +89,7 @@ export default function SignInCard() {
                 nameInSchema="password"
                 fieldTitle="Password"
                 placeHolder="Enter password"
-                className="h-12"
+                className="h-12 text-white"
               />
               <Button
                 className="w-full h-12 cursor-pointer"

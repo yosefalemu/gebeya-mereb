@@ -12,9 +12,13 @@ type ErrorResponse = {
   message?: string;
   email?: string;
   password?: string;
+  role?: "USER" | "ADMIN";
 };
 
-type ResponseType = InferResponseType<(typeof client.api.auth.login)["$post"]>;
+type ResponseType = InferResponseType<
+  (typeof client.api.auth.login)["$post"],
+  200
+>;
 type RequestType = InferRequestType<(typeof client.api.auth.login)["$post"]>;
 
 export const useLogin = () => {

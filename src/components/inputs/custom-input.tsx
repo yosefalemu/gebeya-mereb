@@ -28,10 +28,12 @@ export default function CustomInputLabel({
 }: CustomInputLabelProps) {
   const form = useFormContext();
   return (
+    // In CustomInputLabel
     <FormField
       control={form.control}
       name={nameInSchema}
       render={({ field }) => {
+        console.log(`${nameInSchema} field value:`, field.value); // Debug log
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           if (
             maxCharLength === undefined ||
@@ -43,14 +45,17 @@ export default function CustomInputLabel({
         return (
           <FormItem className={cn("", className)}>
             {showTilte && (
-              <FormLabel className="text-sm font-medium text-neutral-700">
+              <FormLabel className="text-sm font-medium">
                 {fieldTitle}
               </FormLabel>
             )}
             <FormControl>
               <Input
                 id={nameInSchema}
-                className="w-full max-w-xl disabled:cursor-not-allowed h-12"
+                className={cn(
+                  "w-full max-w-xl disabled:cursor-not-allowed h-12",
+                  className
+                )}
                 placeholder={placeHolder}
                 {...props}
                 {...field}

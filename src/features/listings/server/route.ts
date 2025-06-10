@@ -324,8 +324,6 @@ const app = new Hono()
     }
   })
   .get("/", async (c) => {
-    console.log("Fetching all listings");
-    console.log("Request URL:");
     try {
       const listings = await db.select().from(resources);
       if (listings.length === 0) {
@@ -336,6 +334,110 @@ const app = new Hono()
       console.error("Error fetching all listings:", error);
       return c.json(
         { error: "FailedToFetchListings", message: "Failed to fetch listings" },
+        500
+      );
+    }
+  })
+  .get("/company-listings/:companyId", sessionMiddleware, async (c) => {
+    const companyId = c.req.param("companyId");
+    if (!companyId) {
+      return c.json(
+        { error: "InvalidInput", message: "Company ID is required" },
+        400
+      );
+    }
+    try {
+      const listings = await db
+        .select()
+        .from(resources)
+        .where(eq(resources.userId, companyId));
+
+      if (listings.length === 0) {
+        return c.json({ data: [] }, 200);
+      }
+
+      return c.json({ data: listings }, 200);
+    } catch (error) {
+      console.error("Error fetching company listings:", error);
+      return c.json(
+        {
+          error: "FailedToFetchCompanyListings",
+          message: "Failed to fetch company listings",
+        },
+        500
+      );
+    }
+  })
+  .patch("/:listingId/approve", sessionMiddleware, async (c) => {
+    const listingId = c.req.param("listingId");
+    if (!listingId) {
+      return c.json(
+        { error: "InvalidInput", message: "Listing ID is required" },
+        400
+      );
+    }
+    const userId = c.get("userId") as string;
+    if (!userId) {
+      return c.json(
+        { error: "Unauthorized", message: "User not authenticated" },
+        401
+      );
+    }
+    try {
+      const [updatedResource] = await db
+        .update(resources)
+        .set({ availability: "SOLD" })
+        .where(eq(resources.id, listingId))
+        .returning();
+
+      if (!updatedResource) {
+        return c.json({ error: "NotFound", message: "Listing not found" }, 404);
+      }
+      return c.json({ data: updatedResource }, 200);
+    } catch (error) {
+      console.error("Error approving listing:", error);
+      return c.json(
+        {
+          error: "FailedToApproveListing",
+          message: "Failed to approve listing",
+        },
+        500
+      );
+    }
+  })
+  .patch("/:listingId/reject", sessionMiddleware, async (c) => {
+    const listingId = c.req.param("listingId");
+    if (!listingId) {
+      return c.json(
+        { error: "InvalidInput", message: "Listing ID is required" },
+        400
+      );
+    }
+    const userId = c.get("userId") as string;
+    if (!userId) {
+      return c.json(
+        { error: "Unauthorized", message: "User not authenticated" },
+        401
+      );
+    }
+    try {
+      const [updatedResource] = await db
+        .update(resources)
+        .set({ availability: "PENDING" })
+        .where(eq(resources.id, listingId))
+        .returning();
+
+      if (!updatedResource) {
+        return c.json({ error: "NotFound", message: "Listing not found" }, 404);
+      }
+      return c.json({ data: updatedResource }, 200);
+    } catch (error) {
+      console.error("Error rejecting listing:", error);
+      return c.json(
+        {
+          error: "FailedToRejectListing",
+          message: "Failed to reject listing",
+        },
         500
       );
     }
