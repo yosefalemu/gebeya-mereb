@@ -23,12 +23,22 @@ export default function FilterOptions({
   onFilterChange,
   currentFilters,
 }: FilterOptionsProps) {
+  // Map backend availability values to display text
+  const availabilityDisplayMap: { [key: string]: string } = {
+    PENDING: "ACTIVE",
+    SOLD: "SOLD",
+    RESERVED: "RESERVED",
+    UNAVAILABLE: "UNAVAILABLE",
+    ARCHIVED: "ARCHIVED",
+    "": "All",
+  };
+
   return (
-    <div className="flex items-center justify-between ml-auto gap-x-2">
+    <div className="flex items-center justify-between ml-auto gap-x gap-x-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="rounded-sm cursor-pointer flex items-center justify-center gap-x-2 w-36 h-6"
+            className="rounded-sm cursor-pointer flex items-center justify-center gap-x gap-x-2 w-36 h-6"
             variant={currentFilters.category ? "outline" : "default"}
           >
             <h1 className="text-xs uppercase text-md">
@@ -81,7 +91,7 @@ export default function FilterOptions({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="rounded-sm cursor-pointer flex items-center justify-center gap-x-2 w-36 h-6"
+            className="rounded-sm cursor-pointer flex items-center justify-center gap-x gap-x-2 w-36 h-6"
             variant={currentFilters.location ? "outline" : "default"}
           >
             <h1 className="text-xs uppercase text-md">
@@ -147,7 +157,7 @@ export default function FilterOptions({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="rounded-sm cursor-pointer flex items-center justify-center gap-x-2 w-40 h-6"
+            className="rounded-sm cursor-pointer flex items-center justify-center gap-x gap-x-2 w-40 h-6"
             variant={currentFilters.priceRange ? "outline" : "default"}
           >
             <h1 className="text-xs uppercase text-md">
@@ -199,11 +209,12 @@ export default function FilterOptions({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            className="rounded-sm cursor-pointer flex items-center justify-center gap-x-2 w-36 h-6"
+            className="rounded-sm cursor-pointer flex items-center justify-center gap-x gap-x-2 w-36 h-6"
             variant={currentFilters.availability ? "outline" : "default"}
           >
             <h1 className="text-xs uppercase text-md">
-              {currentFilters.availability || "Availability"}
+              {availabilityDisplayMap[currentFilters.availability] ||
+                "Availability "}
             </h1>
             <GoTriangleDown />
           </Button>
@@ -217,7 +228,7 @@ export default function FilterOptions({
           <DropdownMenuItem
             onClick={() => onFilterChange("availability", "PENDING")}
           >
-            PENDING
+            ACTIVE
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => onFilterChange("availability", "SOLD")}

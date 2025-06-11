@@ -45,45 +45,37 @@ export default function AdminHomePage() {
   return (
     <div className="flex flex-col gap-6 py-4 px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+        <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6 flex justify-center flex-col items-center">
-            <div className="text-3xl font-bold text-center">
+            <div className="text-3xl font-bold text-blue-700 text-center">
               {metrics.totalUsers}
             </div>
-            <h1>Total Users</h1>
+            <h1 className="text-blue-600">Total Users</h1>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-green-50 border-green-200">
           <CardContent className="pt-6 flex justify-center flex-col items-center">
-            <div className="text-3xl font-bold text-center">
+            <div className="text-3xl font-bold text-green-700 text-center">
               {metrics.activeUsers}
             </div>
-            <h1>Active Users</h1>
+            <h1 className="text-green-600">Active Users</h1>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-purple-50 border-purple-200">
           <CardContent className="pt-6 flex justify-center flex-col items-center">
-            <div className="text-3xl font-bold text-center">
-              {metrics.pendingUsers}
-            </div>
-            <h1>Inactive Resources</h1>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 flex justify-center flex-col items-center">
-            <div className="text-3xl font-bold text-center">
+            <div className="text-3xl font-bold text-purple-700 text-center">
               {metrics.totalListings}
             </div>
-            <h1>Total Resources</h1>
+            <h1 className="text-purple-600">Total Resources</h1>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-orange-50 border-orange-200">
           <CardContent className="pt-6 flex justify-center flex-col items-center">
-            <div className="text-3xl font-bold text-center">
+            <div className="text-3xl font-bold text-orange-700 text-center">
               {metrics.activeListings}
             </div>
-            <h1>Active Resources</h1>
+            <h1 className="text-orange-600">Active Resources</h1>
           </CardContent>
         </Card>
       </div>

@@ -27,13 +27,23 @@ export default function FilterOptions({
   onFilterChange,
   currentFilters,
 }: FilterOptionsProps) {
+  // Map backend availability values to display text
+  const availabilityDisplayMap: { [key: string]: string } = {
+    PENDING: "ACTIVE",
+    SOLD: "SOLD",
+    RESERVED: "RESERVED",
+    UNAVAILABLE: "UNAVAILABLE",
+    ARCHIVED: "ARCHIVED",
+    "": "All",
+  };
+
   return (
     <div className="flex items-center justify-between w-full px-4 py-2 bg-white shadow-md rounded-lg gap-x-16">
       <div className="relative max-w-xs w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Search by name"
-          className="h-10 pl-10" // Added pl-10 to accommodate icon
+          className="h-10 pl-10"
           value={currentFilters.search}
           onChange={(e) => onFilterChange("search", e.target.value)}
         />
@@ -52,7 +62,9 @@ export default function FilterOptions({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-36">
-            <DropdownMenuLabel className="uppercase">Category</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase">
+              Category
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onFilterChange("category", "")}>
               All
@@ -107,7 +119,9 @@ export default function FilterOptions({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-36">
-            <DropdownMenuLabel className="uppercase">Location</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase">
+              Location
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onFilterChange("location", "")}>
               All
@@ -177,7 +191,9 @@ export default function FilterOptions({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-60 text-center">
-            <DropdownMenuLabel className="uppercase">Price Range</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase">
+              Price Range
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onFilterChange("priceRange", "")}>
               All
@@ -221,7 +237,8 @@ export default function FilterOptions({
               variant={currentFilters.availability ? "outline" : "default"}
             >
               <h1 className="text-xs uppercase text-md">
-                {currentFilters.availability || "Availability"}
+                {availabilityDisplayMap[currentFilters.availability] ||
+                  "Availability"}
               </h1>
               <GoTriangleDown />
             </Button>
@@ -237,7 +254,7 @@ export default function FilterOptions({
             <DropdownMenuItem
               onClick={() => onFilterChange("availability", "PENDING")}
             >
-              PENDING
+              ACTIVE
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => onFilterChange("availability", "SOLD")}

@@ -167,7 +167,9 @@ export default function MyListingsItems({
                 statusColors[listing.availability]
               }`}
             >
-              {listing.availability}
+              {listing.availability === "PENDING"
+                ? "ACTIVE"
+                : listing.availability}
             </span>
             <div className="flex gap-x-2">
               <Button

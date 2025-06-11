@@ -19,7 +19,7 @@ export default function EachItem({
 }: EachItemProps) {
   // Define color mapping for each status
   const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-500",
+    PENDING: "bg-green-500",
     SOLD: "bg-red-500",
     RESERVED: "bg-blue-500",
     UNAVAILABLE: "bg-gray-500",
@@ -51,7 +51,7 @@ export default function EachItem({
             statusColorClass
           )}
         >
-          {status}
+          {status == "PENDING" ? "ACTIVE" : status}
         </div>
       </div>
     </Link>

@@ -116,7 +116,11 @@ export default function SendRequest() {
                 <TableCell>{item.category}</TableCell>
                 <TableCell>{item.price}</TableCell>
                 <TableCell>{item.rate}</TableCell>
-                <TableCell>{item.availability}</TableCell>
+                <TableCell>
+                  {item.availability === "PENDING"
+                    ? "ACTIVE"
+                    : item.availability}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
