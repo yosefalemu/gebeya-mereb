@@ -108,7 +108,11 @@ export default function AdminResourcePage() {
                 <TableCell>{item.price}</TableCell>
                 <TableCell>{item.rate}</TableCell>
                 <TableCell>{item.address}</TableCell>
-                <TableCell>{item.availability}</TableCell>
+                <TableCell>
+                  {item.availability === "PENDING"
+                    ? "ACTIVE"
+                    : item.availability}
+                </TableCell>
                 <TableCell>
                   <Link href={`/adminresource/${item.id}`}>
                     <Edit className="text-yellow-300 hover:text-yellow-700" />
